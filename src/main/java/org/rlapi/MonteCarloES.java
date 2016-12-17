@@ -6,7 +6,16 @@ import java.util.Map;
 
 /**
  * Implementation of Monte Carlo with Exploring Starts algorithm described in 
- * the book Reinforcement Learning: An Introduction from R. S. Sutton and A. G. Barton.
+ * the book Reinforcement Learning: An Introduction from R. S. Sutton and A. G. Barton. 
+ * Here are described important notes about this algorithm.
+ * First, the algorithm is based on episodes. So, the environment must lead the 
+ * episode for an end, i. e., a situation where no more actions are available. If 
+ * this first condition is not assured, the training phase will can enter in an 
+ * infinity loop.
+ * Second, the environment must ensure the exploring starts condition. This means 
+ * that every new episode, the algorithm will reset the environment, whose initial 
+ * state must be randomly selected. If the second condition is not assured, the 
+ * algorithm's convergence won't be assured.
  * 
  * @author Alexandre Lima
  */
