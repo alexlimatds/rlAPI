@@ -37,18 +37,12 @@ public class Maze implements Environment{
     }
 
     @Override
-    public boolean performAction(String action) {
+    public Double performAction(String action) {
         if(getAvailableActions().contains(action)){
             currentPlace = currentPlace.getDestinationFor(action);
-            return true;
+            return (currentPlace.isTerminal() ? 10.0 : 0.0);
         }
-        return false;
-    }
-
-    @Override
-    public double getReturnValueForAction(String state, String action) {
-        Place nextPlace = getPlace(state).getDestinationFor(action);
-        return (nextPlace.isTerminal() ? 10 : 0);
+        return null;
     }
 
     @Override

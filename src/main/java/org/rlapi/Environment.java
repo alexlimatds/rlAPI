@@ -25,17 +25,10 @@ public interface Environment {
     /**
      * Performs an action on this environment.
      * @param action
-     * @return true if the input action is valid for the current state.
+     * @return the return value for the action performed if the action is allowed. 
+     * In the other case, returns null.
      */
-    public boolean performAction(String action);
-    
-    /**
-     * Returns the return value for an action that can be performed on the 
-     * inputed state.
-     * @param action
-     * @return 
-     */
-    public double getReturnValueForAction(String state, String action);
+    public Double performAction(String action);
     
     /**
      * Restarts this environment. Note that for some algorithms the initial state 
