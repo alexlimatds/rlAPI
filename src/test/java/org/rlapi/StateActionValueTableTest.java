@@ -17,7 +17,7 @@ public class StateActionValueTableTest {
         String stateA = "A";
         String stateB = "B";
         table.putValue(stateA, "action", 3.0);
-        table.putValue(stateB, "aaction", 8.0);
+        table.putValue(stateB, "action", 8.0);
         Set<String> states = table.getStates();
         Assert.assertTrue(states.contains(stateA));
         Assert.assertTrue(states.contains(stateB));
@@ -106,5 +106,15 @@ public class StateActionValueTableTest {
         table.putValue("s1", "a2", 2.0);
         List<String> maxActions = table.getBestActions("s2");
         Assert.assertTrue(maxActions.isEmpty());
+    }
+    
+    @Test
+    public void testPutValue_1(){
+        //Tests an update
+        ActionValueTableInMemory table = new ActionValueTableInMemory();
+        table.putValue("s1", "a1", 8.0);
+        table.putValue("s1", "a2", 2.0);
+        table.putValue("s1", "a1", 7.0);
+        Assert.assertEquals(7.0, table.getValue("s1", "a1"), 0.00001);
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Implementation of Monte Carlo with Exploring Starts algorithm described in 
@@ -70,11 +71,14 @@ public class MonteCarloES {
                     }
                 }
                 Double returnValue = environment.performAction(action);
-                if(returnValue != null){ //the action was performed, so register its return and the occurrence of state-action
-                    visitedPairs.put(currentState, action);
-                    registerReturnValue(currentState, action, returnValue, stateActionReturnValues);
+                if(returnValue != null){ //The action was performed
+                    //If is the first occurrence of this state-action pair, register its return and the its occurrence
+                    if(!visitedPairs.containsKey(currentState)){
+                        registerReturnValue(currentState, action, returnValue, stateActionReturnValues);
+                        visitedPairs.put(currentState, action);
+                    }
                 }
-                else{ //the action wasn't performed, so there is an implementation bug
+                else{ //The action wasn't performed, so there is an implementation bug
                     throw new IllegalStateException("Action not performed: there is some BUG");
                 }
                 
@@ -100,13 +104,26 @@ public class MonteCarloES {
         return policy;
     }
     
+    void computeReturnsAverage(Set<StateActionPair> visitedActionPairs, 
+            Map<StateActionPair, List<Double>> mapOfReturnsList){
+        for(StateActionPair pair : visitedActionPairs){
+            List<Double> returnsList = mapOfReturnsList.get(pair);
+            double avg = 0.0;
+            for(Double d : returnsList){
+                avg += d;
+            }
+            avg = avg / returnsList.size();
+            //Updates the value of the state-action pair
+            actionValueTable.putValue(pair.getState(), pair.getAction(), avg);
+        }
+    }
+    
     private void registerReturnValue(String state, String action, Double returnValue, 
             Map<String, List<Double>> returnsListMap){
         String key = state + ";" + action;
         List<Double> returnsList = returnsListMap.get(key);
         if(returnsList == null){//There is no return list for this state-action pair, so create one
             returnsList = new ArrayList<>();
-            returnsList.add(returnValue);
             returnsListMap.put(key, returnsList);
         }
         returnsList.add(returnValue);
