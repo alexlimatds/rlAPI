@@ -36,4 +36,16 @@ public interface Environment {
      */
     public void reset();
     
+    /**
+     * Tells if this environment reached a terminal state.
+     * @return 
+     */
+    public boolean isInTerminalState();
+    
+    /**
+     * Returns the available actions to a particular state.
+     * @param state
+     * @return 
+     */
+    public List<String> getStateActions(String state);
 }

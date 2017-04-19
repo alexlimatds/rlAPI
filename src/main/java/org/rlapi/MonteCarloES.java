@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of Monte Carlo with Exploring Starts algorithm described in 
@@ -40,16 +41,14 @@ public class MonteCarloES {
      * @return the generated policy, i. e., a state-action map that keeps the best action for a state.
      */
     public Map<String, String> train(int episodes){
-        //final policy generated
         Map<String, String> policy = tableBuilder.createMap();
-        //Lists of return values from state-action pairs. The entry's key is the 
-        //string junction of state and action separated by a comma.
-        Map<String, List<Double>> stateActionReturnValues = tableBuilder.createMap();
-        //keeps the state-action pairs visited in the episode
-        Map<String, String> visitedPairs = tableBuilder.createMap();
+        //Lists of return values from state-action pairs
+        Map<StateActionPair, List<Double>> stateActionReturnValues = tableBuilder.createMap();
+        //Keeps the state-action pairs visited in the episode
+        Set<StateActionPair> visitedPairs = tableBuilder.createSet();
         
         for(int i = 0; i < episodes; i++){
-            environment.reset();
+            environment.reset(); //The environment's reset must generate a random initial state
             List<String> actions = environment.getAvailableActions();
             visitedPairs.clear();
             //performs actions based on the policy if there are available actions
@@ -72,10 +71,11 @@ public class MonteCarloES {
                 }
                 Double returnValue = environment.performAction(action);
                 if(returnValue != null){ //The action was performed
-                    //If is the first occurrence of this state-action pair, register its return and the its occurrence
-                    if(!visitedPairs.containsKey(currentState)){
-                        registerReturnValue(currentState, action, returnValue, stateActionReturnValues);
-                        visitedPairs.put(currentState, action);
+                    //If is the first occurrence of this state-action pair, register its return and its occurrence
+                    StateActionPair stateActionPair = new StateActionPair(currentState, action);
+                    if(!visitedPairs.contains(stateActionPair)){
+                        registerReturnValue(stateActionPair, returnValue, stateActionReturnValues);
+                        visitedPairs.add(stateActionPair);
                     }
                 }
                 else{ //The action wasn't performed, so there is an implementation bug
@@ -85,23 +85,29 @@ public class MonteCarloES {
                 actions = environment.getAvailableActions();
             }
             
-            //Gets the average return of each state-action visited during the episode
-            for(String state : visitedPairs.keySet()){
-                String action = visitedPairs.get(state);
-                List<Double> returnsList = stateActionReturnValues.get(state + ";" + action);
-                double avg = 0;
-                for(Double d : returnsList){
-                    avg += d;
-                }
-                avg = avg / returnsList.size();
-                //Updates the value of the state-action pair
-                actionValueTable.putValue(state, action, avg);
-                //Updates the policy with the best action
-                policy.put(state, actionValueTable.getBestActions(state).get(0));
-            }
+            //Computes the average return of each state-action visited during the episode
+            computeReturnsAverage(visitedPairs, stateActionReturnValues);
+            
+            //Updates the policy with the best action
+            updatePolicy(visitedPairs, policy);
         }
         
         return policy;
+    }
+    
+    void updatePolicy(Set<StateActionPair> visitedActionPairs, 
+            Map<String, String> policy){
+        
+        Set<String> visitedStates = visitedActionPairs.stream()
+                .map(pair -> pair.getState())
+                .collect(Collectors.toSet());
+        
+        visitedStates.stream().forEach((state) -> {
+            policy.put(state, actionValueTable.getBestActions(state).get(0));
+        });
+        //OBS: maybe this code would be better to put this code in the 
+        //computeReturnsAverage method in orde to evict the iteration over 
+        //the visitedStates
     }
     
     void computeReturnsAverage(Set<StateActionPair> visitedActionPairs, 
@@ -118,13 +124,12 @@ public class MonteCarloES {
         }
     }
     
-    private void registerReturnValue(String state, String action, Double returnValue, 
-            Map<String, List<Double>> returnsListMap){
-        String key = state + ";" + action;
-        List<Double> returnsList = returnsListMap.get(key);
-        if(returnsList == null){//There is no return list for this state-action pair, so create one
+    private void registerReturnValue(StateActionPair stateActionPair, Double returnValue, 
+            Map<StateActionPair, List<Double>> returnsListMap){
+        List<Double> returnsList = returnsListMap.get(stateActionPair);
+        if(returnsList == null){//There is no return list for this state-action pair, so creates one
             returnsList = new ArrayList<>();
-            returnsListMap.put(key, returnsList);
+            returnsListMap.put(stateActionPair, returnsList);
         }
         returnsList.add(returnValue);
     }

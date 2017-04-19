@@ -1,15 +1,12 @@
 package org.rlapi;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.rlapi.maze.Maze;
 import org.rlapi.maze.Place;
@@ -37,7 +34,7 @@ public class MonteCarloESTest {
     }
     
     @Test
-    public void testTestTrain(){
+    public void testTrain(){
         MonteCarloES rlAgent = new MonteCarloES(createSimpleMaze(), new TableBuilderInMemory());
         Map<String, String> policy = rlAgent.train(200);
         Assert.assertEquals("east", policy.get("1"));
@@ -78,5 +75,44 @@ public class MonteCarloESTest {
         Assert.assertEquals(pair1Avg, valueTable.getValue(pair1.getState(), pair1.getAction()), 0.00001);
         Assert.assertEquals(pair2Avg, valueTable.getValue(pair2.getState(), pair2.getAction()), 0.00001);
         Assert.assertEquals(pair3Avg, valueTable.getValue(pair3.getState(), pair3.getAction()), 0.00001);
+    }
+    
+    @Test
+    public void testUpdatePolicy(){
+        //*** Data preparation ***
+        MonteCarloES mc = new MonteCarloES(null, new TableBuilderInMemory());
+
+        ActionValueTable valueTable = mc.getActionValueTable();
+        valueTable.putValue("s1", "a1", 53.6);
+        valueTable.putValue("s1", "a2", 88.9); //best action for s1
+        valueTable.putValue("s1", "a3", 75.6);
+        valueTable.putValue("s2", "a4", 22.8); //best action for s2
+        valueTable.putValue("s2", "a5", 18.6);
+        valueTable.putValue("s3", "a6", 2.7);  //best action for s3
+        valueTable.putValue("s3", "a7", 0.6);
+        valueTable.putValue("s4", "a8", 1.6);
+        valueTable.putValue("s4", "a9", 9.0);  //best action for s4
+        
+        Set<StateActionPair> visitedPairs = new HashSet<>();
+        visitedPairs.add(new StateActionPair("s1", "a1"));
+        visitedPairs.add(new StateActionPair("s1", "a2"));
+        visitedPairs.add(new StateActionPair("s1", "a3"));
+        visitedPairs.add(new StateActionPair("s2", "a5"));
+        visitedPairs.add(new StateActionPair("s4", "a8"));
+        visitedPairs.add(new StateActionPair("s4", "a9"));
+        
+        Map<String, String> policy = new HashMap<>();
+        policy.put("s1", "a3");
+        policy.put("s2", "a4");
+        policy.put("s3", "a6");
+        
+        //*** Performing method ***
+        mc.updatePolicy(visitedPairs, policy);
+        
+        //*** Checking results ***
+        Assert.assertEquals("a2", policy.get("s1"));
+        Assert.assertEquals("a4", policy.get("s2"));
+        Assert.assertEquals("a6", policy.get("s3"));
+        Assert.assertEquals("a9", policy.get("s4"));
     }
 }
