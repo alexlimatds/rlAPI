@@ -33,13 +33,11 @@ public class Maze4x3 implements Environment{
         p2.addNeighbour(p1, "W");
         p2.addNeighbour(p3, "E");
         p2.addNeighbour(p6, "S");
-        p3.addNeighbour(p3, "0"); //0 = action without effect
         p4.addNeighbour(p0, "N"); //N = north
         p4.addNeighbour(p8, "S");
         p6.addNeighbour(p2, "N");
         p6.addNeighbour(p7, "E");
         p6.addNeighbour(p10, "S");
-        p7.addNeighbour(p7, "0");
         p8.addNeighbour(p4, "N");
         p8.addNeighbour(p9, "E");
         p9.addNeighbour(p8, "W");

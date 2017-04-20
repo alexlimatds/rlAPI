@@ -49,8 +49,11 @@ public class QLearning {
                 throw new IllegalStateException("Action not performed: there is some BUG");
             }
             //calculates the Q delta value
-            String state2BestAction = actionValueTable.getBestActions(state2).get(0);
-            double state2BestQ = actionValueTable.getValue(state2, state2BestAction);
+            double state2BestQ = 0.0;
+            if(!environment.isInTerminalState()){
+                String state2BestAction = actionValueTable.getBestActions(state2).get(0);
+                state2BestQ = actionValueTable.getValue(state2, state2BestAction);
+            }
             double state1Q = actionValueTable.getValue(state1, choosenAction);
             double delta = alpha * (returnValue + gama * state2BestQ - state1Q);
             actionValueTable.putValue(state1, choosenAction, state1Q + delta);
