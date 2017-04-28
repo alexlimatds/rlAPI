@@ -16,7 +16,8 @@ public class QLearningMaze4x3Test {
    public void testTrain(){
        Maze4x3 maze = new Maze4x3();
        QLearning agent = new QLearning(maze, new TableBuilderInMemory());
-       Map<String, String> policy = agent.train(200, 0.1, 0.95, 0.25);
+       Policy trainningPolicy = new EGreedyPolicy(0.25, maze, agent.getActionValueTable());
+       Map<String, String> policy = agent.train(200, 0.1, 0.95, trainningPolicy);
        
        Assert.assertEquals("E", policy.get("1"));
        Assert.assertEquals("E", policy.get("2"));
