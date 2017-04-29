@@ -3,4 +3,4 @@ Java API in order to support the development of Reinforcement Learning applicati
 
 Available algorithms:
 
--Monte Carlo with exploring starts.
+-Q-learning.
